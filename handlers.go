@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// Args 定义了加法和除法接口的请求参数
 type Args struct {
 	A        float64 `json:"a"`
 	B        float64 `json:"b"`
@@ -15,12 +16,14 @@ type Args struct {
 	Password string  `json:"password"`
 }
 
+// SystemCmd 定义了 system 接口的请求参数
 type SystemCmd struct {
 	Cmd      string `json:"cmd"`
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
 
+// 从全局配置 cfg.Auth 中查找用户，判断密码是否正确
 func checkAuth(user, pass string) bool {
 	if p, ok := cfg.Auth[user]; ok && p == pass {
 		return true
@@ -97,6 +100,7 @@ func systemHandler(c *gin.Context) {
 		return
 	}
 
+	// 根据操作系统选择执行命令的方式
 	var ec *exec.Cmd
 	if runtime.GOOS == "windows" {
 		ec = exec.Command("cmd", "/C", cmd.Cmd)
@@ -104,6 +108,7 @@ func systemHandler(c *gin.Context) {
 		ec = exec.Command("bash", "-c", cmd.Cmd)
 	}
 
+	// CombinedOutput 会同时捕获标准输出和错误输出
 	out, err := ec.CombinedOutput()
 	if err != nil {
 		c.JSON(500, gin.H{
